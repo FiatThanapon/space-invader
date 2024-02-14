@@ -4,11 +4,39 @@ from kivy.properties import NumericProperty
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.lang import Builder
+from kivy.animation import Animation
+
+Builder.load_file('design.kv')
+
+Window.size = (400,600)
+
+
+class Bullet(Widget):
+    continue_on = True
+
+    def move_up(self, *args):
+        if self.parent:
+            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=0.75)
+            self.animation_up.bind(on_complete=self.remove_bullet)
+            #self.animation_up.bind(on_progress=self.on_travel)
+            self.animation_up.start(self)
+
+    def remove_bullet(self, *args):
+        if self.parent:
+            self.parent.bullet_on_screen = False
+            del self.parent.array_of_bullets[0]
+            self.parent.remove_widget(self)
+
 
 class Player(Widget):
     pass
 
+
 class SpaceGame(Widget):
+    travel_direction = 'right'
+    bullet_on_screen = False
+    array_of_bullets = []
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -16,7 +44,7 @@ class SpaceGame(Widget):
         self._keyboard.bind(on_key_down=self.on_key_down) #เชื่อมกับคีย์บอร์ด
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
-        Clock.schedule_interval(self.move_step, 0)
+        Clock.schedule_interval(self.process_keys, 0)
 
     def _on_keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self.on_key_down)
@@ -30,14 +58,29 @@ class SpaceGame(Widget):
         if keycode[1] in self.pressed_keys:
             self.pressed_keys.remove(keycode[1])
 
-    def move_step(self, dt): #เลื่อนซ้ายขวา
+    def process_keys(self, dt): #เลื่อนซ้ายขวา
         cur_x = self.player.x
         step = 300 * dt #ปรับความเร็ว
 
-        if 'a' in self.pressed_keys:
+        if self.pressed_keys.issuperset({'a'}):
+            print('a')
             cur_x -= step
-        if 'd' in self.pressed_keys:
+        if self.pressed_keys.issuperset({'d'}):
+            print('d')
             cur_x += step
+
+        if self.pressed_keys.issuperset({'spacebar'}):
+            print('spacebar')
+            if not self.bullet_on_screen:
+                new_bullet = Bullet()
+
+                self.add_widget(new_bullet)
+                new_bullet.size = (self.parent.size[0] / 60, self.parent.size[0] / 16)
+                new_bullet.pos = (self.player.pos[0] + self.player.size[0] / 2 - (self.parent.size[0] / 160),
+                                self.player.pos[1] + self.player.size[1]) 
+                self.array_of_bullets.append(new_bullet)
+                new_bullet.move_up()
+                self.bullet_on_screen = True
 
         self.player.x = cur_x
 
@@ -46,5 +89,4 @@ class SpaceInvadersApp(App):
         return SpaceGame()
 
 if __name__ == '__main__':
-    Builder.load_file('design.kv')
     SpaceInvadersApp().run()
