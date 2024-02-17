@@ -67,26 +67,24 @@ class Game(Widget):
         step = 300 * dt #ปรับความเร็ว
 
         if self.pressed_keys.issuperset({'a'}):
-            print('a')
-            cur_x -= step
+            cur_x = max(cur_x - step, 0)  # Ensure not moving beyond the left edge
+
         if self.pressed_keys.issuperset({'d'}):
-            print('d')
-            cur_x += step
+            cur_x = min(cur_x + step, self.width - self.player.width)  # Ensure not moving beyond the right edge
 
         if self.pressed_keys.issuperset({'spacebar'}):
-            print('spacebar')
             if not self.bullet_on_screen:
                 new_bullet = Bullet()
 
                 self.add_widget(new_bullet)
-                new_bullet.size = (self.parent.size[0] / 60, self.parent.size[0] / 16)
-                new_bullet.pos = (self.player.pos[0] + self.player.size[0] / 2 - (self.parent.size[0] / 160),
-                                self.player.pos[1] + self.player.size[1]) 
+                new_bullet.size = (self.width / 60, self.width / 16)
+                new_bullet.pos = (self.player.center_x - (self.width / 160), self.player.top)
                 self.array_of_bullets.append(new_bullet)
                 new_bullet.move_up()
                 self.bullet_on_screen = True
 
         self.player.x = cur_x
+
         
         spacing = Window.width / 40
         new_life_1 = Life()
