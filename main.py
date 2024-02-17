@@ -1,6 +1,5 @@
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -8,7 +7,7 @@ from kivy.animation import Animation
 
 Builder.load_file('design.kv')
 
-Window.size = (400,600)
+Window.size = (500, 700)
 
 
 class Bullet(Widget):
@@ -32,7 +31,7 @@ class Player(Widget):
     pass
 
 
-class SpaceGame(Widget):
+class Game(Widget):
     travel_direction = 'right'
     bullet_on_screen = False
     array_of_bullets = []
@@ -86,7 +85,7 @@ class SpaceGame(Widget):
 
 class SpaceInvadersApp(App):
     def build(self):
-        return SpaceGame()
+        return Game()
 
 if __name__ == '__main__':
     SpaceInvadersApp().run()
