@@ -2,8 +2,15 @@
     canvas:
         Rectangle:
             size: self.size
-            source: 'image\player.png'
+            source: 'image/player.png'
             pos: self.pos
+
+<Bullet>
+    canvas:
+        Rectangle:
+            source:'image/green_laser.png'
+            size:self.size
+            pos:self.pos
 
 <Game>:
     player: my_ship
