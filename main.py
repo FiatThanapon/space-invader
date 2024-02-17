@@ -9,6 +9,9 @@ Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
+class Alien(Widget):
+    pass
+
 
 class Bullet(Widget):
     continue_on = True
@@ -40,7 +43,9 @@ class Game(Widget):
     array_of_bullets = []
     number_of_lives = 3
     array_of_lives = []
-    
+    array_of_aliens = []
+
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -48,7 +53,24 @@ class Game(Widget):
         self._keyboard.bind(on_key_down=self.on_key_down) #เชื่อมกับคีย์บอร์ด
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
+        self.create_aliens()
         Clock.schedule_interval(self.process_keys, 0)
+
+    
+    def create_aliens(self):
+        x_spacing_between_aliens = self.width / 1.1  # Adjust the spacing along the x-axis
+        y_start = self.height + 500
+        x_start = self.width + 300
+        y_spacing_between_aliens = self.height / 2  # Adjust the spacing along the y-axis
+
+        for x in range(5):
+            for y in range(5):
+                new_alien = Alien()
+                new_alien.size = (self.width / 1.5, self.width / 2)  # Adjust the size of the alien here
+                new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens)
+                self.array_of_aliens.append(new_alien)
+                self.add_widget(new_alien)
+
 
     def _on_keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self.on_key_down)
@@ -67,10 +89,10 @@ class Game(Widget):
         step = 300 * dt #ปรับความเร็ว
 
         if self.pressed_keys.issuperset({'a'}):
-            cur_x = max(cur_x - step, 0)  # Ensure not moving beyond the left edge
+            cur_x = max(cur_x - step, 0)  # ไม่เคลื่อนที่เกินขอบ
 
         if self.pressed_keys.issuperset({'d'}):
-            cur_x = min(cur_x + step, self.width - self.player.width)  # Ensure not moving beyond the right edge
+            cur_x = min(cur_x + step, self.width - self.player.width)  # ไม่เคลื่อนที่เกินขอบ
 
         if self.pressed_keys.issuperset({'spacebar'}):
             if not self.bullet_on_screen:
