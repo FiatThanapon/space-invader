@@ -58,16 +58,16 @@ class Game(Widget):
 
     
     def create_aliens(self):
-        x_spacing_between_aliens = self.width / 1.1  # Adjust the spacing along the x-axis
-        y_start = self.height + 500
-        x_start = self.width + 300
-        y_spacing_between_aliens = self.height / 2  # Adjust the spacing along the y-axis
+        x_spacing_between_aliens = self.width / 1.1  # ปรับระยะห่าง x
+        y_start = self.height + 500 #เปลี่ยนตำแหน่ง x
+        x_start = self.width + 300  #เปลี่ยนตำแหน่ง y
+        y_spacing_between_aliens = self.height / 2  # ปรับระยะห่าง y
 
-        for x in range(5):
-            for y in range(5):
+        for x in range(5):#แถวเอเลี่ยน
+            for y in range(5):#หลักเอเลี่ยน
                 new_alien = Alien()
-                new_alien.size = (self.width / 1.5, self.width / 2)  # Adjust the size of the alien here
-                new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens)
+                new_alien.size = (self.width / 1.5, self.width / 2)  # ปรับขนาดเอเลี่ยน
+                new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens) #ตัวกำหนดตำแหน่ง
                 self.array_of_aliens.append(new_alien)
                 self.add_widget(new_alien)
 
