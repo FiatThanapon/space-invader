@@ -30,12 +30,17 @@ class Bullet(Widget):
 class Player(Widget):
     pass
 
+class Life(Widget):
+    pass
+
 
 class Game(Widget):
     travel_direction = 'right'
     bullet_on_screen = False
     array_of_bullets = []
-
+    number_of_lives = 3
+    array_of_lives = []
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -82,6 +87,25 @@ class Game(Widget):
                 self.bullet_on_screen = True
 
         self.player.x = cur_x
+        
+        spacing = Window.width / 40
+        new_life_1 = Life()
+        new_life_1.size = (Window.width / 15, Window.width / 15)
+        new_life_1.pos = (Window.width - (3 * Window.width / 15) - (3 * spacing), Window.height - Window.width / 15)
+        self.array_of_lives.append(new_life_1)
+        self.add_widget(new_life_1)
+
+        new_life_2 = Life()
+        new_life_2.size = (Window.width / 15, Window.width / 15)
+        new_life_2.pos = (Window.width - (2 * Window.width / 15) - (2 * spacing), Window.height - Window.width / 15)
+        self.array_of_lives.append(new_life_2)
+        self.add_widget(new_life_2)
+
+        new_life_3 = Life()
+        new_life_3.size = (Window.width / 15, Window.width / 15)
+        new_life_3.pos = (Window.width - (1 * Window.width / 15) - (1 * spacing), Window.height - Window.width / 15)
+        self.array_of_lives.append(new_life_3)
+        self.add_widget(new_life_3)
 
 class SpaceInvadersApp(App):
     def build(self):
