@@ -9,7 +9,7 @@ Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
-def collides(rect1,rect2):
+def collides(rect1,rect2): #ติดปัญหาที่ไม่มีalien pos and alien size
     r1x = rect1[0][0]
     r1y = rect1[0][1]
     r2x = rect2[0][0]
@@ -23,8 +23,12 @@ def collides(rect1,rect2):
         return True
     else:
         return False
-
-
+    """
+    if collides((self.hero.pos,self.hero.size),(self.enemy.pos,self.enemy.size)):
+            print("colliding!")
+        else:
+            print("not Colliding")
+    """
 class Alien(Widget):
     pass
 
