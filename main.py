@@ -19,7 +19,7 @@ class Bullet(Widget):
 
     def move_up(self, *args):
         if self.parent:
-            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=0.75)
+            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=1.0) # เพิ่ม duration เพื่อไม่ให้ player ยิงได้เร็วเกินไป
             self.animation_up.bind(on_complete=self.remove_bullet)
             self.animation_up.start(self)
 
