@@ -69,9 +69,11 @@ class Game(Widget):
                 self.add_widget(new_alien)
     
     def check_collisions(self, dt):
+        #ตรวจสอบการชนกันระหว่างกระสุนกับเอเลี่ยน
         for bullet in self.array_of_bullets:
             for alien in self.array_of_aliens:
                 if self.collides(bullet, alien):
+                    #ลบกระสุนและเอเลี่ยนเมื่อมันมาชนกัน
                     self.remove_widget(bullet)
                     self.array_of_bullets.remove(bullet)
                     self.remove_widget(alien)
@@ -79,6 +81,7 @@ class Game(Widget):
                     return  
 
     def collides(self, rect1, rect2):
+        #ตรวจสอบว่า rect1 และ rect2 ทับซ้อนกันหรือไม่
         r1x, r1y = rect1.pos
         r2x, r2y = rect2.pos
         r1w, r1h = rect1.size
