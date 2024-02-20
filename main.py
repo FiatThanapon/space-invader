@@ -53,23 +53,23 @@ class Game(Widget):
         super().__init__(**kwargs)
 
         self._keyboard = Window.request_keyboard(self._on_keyboard_closed, self) 
-        self._keyboard.bind(on_key_down=self.on_key_down)
-        self._keyboard.bind(on_key_up=self.on_key_up)
+        self._keyboard.bind(on_key_down=self.on_key_down) #เชื่อมกับคีย์บอร์ด
+        self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
         self.create_aliens()
         Clock.schedule_interval(self.process_keys, 0)
 
     def create_aliens(self):
-        x_spacing_between_aliens = self.width / 1.1
-        y_start = self.height + 500
-        x_start = self.width + 300
-        y_spacing_between_aliens = self.height / 2
+        x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
+        y_start = self.height + 500 #เปลี่ยนตำแหน่ง x
+        x_start = self.width + 300 #เปลี่ยนตำแหน่ง y
+        y_spacing_between_aliens = self.height / 2 # ปรับระยะห่าง y
 
-        for x in range(5):
-            for y in range(5):
+        for x in range(5): #แถวเอเลี่ยน
+            for y in range(5): #หลักเอเลี่ยน
                 new_alien = Alien()
-                new_alien.size = (self.width / 1.5, self.width / 2)
-                new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens)
+                new_alien.size = (self.width / 1.5, self.width / 2) # ปรับขนาดเอเลี่ยน
+                new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens) #ตัวกำหนดตำแหน่ง
                 self.array_of_aliens.append(new_alien)
                 self.add_widget(new_alien)
 
@@ -78,22 +78,22 @@ class Game(Widget):
         self._keyboard.unbind(on_key_up=self.on_key_up)
         self._keyboard = None
 
-    def on_key_down(self, keyboard, keycode, text, modifiers):
+    def on_key_down(self, keyboard, keycode, text, modifiers): #กดคีย์บอร์ด
         self.pressed_keys.add(keycode[1])
 
-    def on_key_up(self, keyboard, keycode):
+    def on_key_up(self, keyboard, keycode): #ไม่กดคีย์บอร์ด
         if keycode[1] in self.pressed_keys:
             self.pressed_keys.remove(keycode[1])
 
-    def process_keys(self, dt):
+    def process_keys(self, dt): #เลื่อนซ้ายขวา
         cur_x = self.player.x
-        step = 300 * dt
+        step = 300 * dt #ปรับความเร็ว
 
         if self.pressed_keys.issuperset({'a'}):
-            cur_x = max(cur_x - step, 0)
+            cur_x = max(cur_x - step, 0) #ไม่เคลื่อนที่เกินขอบ
 
         if self.pressed_keys.issuperset({'d'}):
-            cur_x = min(cur_x + step, self.width - self.player.width)
+            cur_x = min(cur_x + step, self.width - self.player.width) #ไม่เคลื่อนที่เกินขอบ
 
         if self.pressed_keys.issuperset({'spacebar'}):
             if not self.bullet_on_screen:
@@ -104,7 +104,6 @@ class Game(Widget):
                 self.array_of_bullets.append(new_bullet)
                 new_bullet.move_up()
                 self.bullet_on_screen = True
-
         self.player.x = cur_x
 
         spacing = Window.width / 40
