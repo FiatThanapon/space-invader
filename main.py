@@ -9,19 +9,13 @@ Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
-def collides(rect1, rect2):
-    r1x, r1y = rect1[0]
-    r2x, r2y = rect2[0]
-    r1w, r1h = rect1[1]
-    r2w, r2h = rect2[1]
-
-    return r1x < r2w and r1x + r1w > r2x and r1y < r2y + r2h and r1y + r1h > r2h
-
 class Alien(Widget):
     pass
 
 class Bullet(Widget):
-    continue_on = True
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.continue_on = True
 
     def move_up(self, *args):
         if self.parent:
@@ -32,7 +26,7 @@ class Bullet(Widget):
     def remove_bullet(self, *args):
         if self.parent:
             self.parent.bullet_on_screen = False
-            del self.parent.array_of_bullets[0]
+            self.parent.array_of_bullets.remove(self)
             self.parent.remove_widget(self)
 
 class Player(Widget):
@@ -58,7 +52,8 @@ class Game(Widget):
         self.pressed_keys = set()
         self.create_aliens()
         Clock.schedule_interval(self.process_keys, 0)
-
+        Clock.schedule_interval(self.check_collisions, 0)
+    
     def create_aliens(self):
         x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
         y_start = self.height + 500 #เปลี่ยนตำแหน่ง x
@@ -72,18 +67,42 @@ class Game(Widget):
                 new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens) #ตัวกำหนดตำแหน่ง
                 self.array_of_aliens.append(new_alien)
                 self.add_widget(new_alien)
+    
+    def check_collisions(self, dt):
+        for bullet in self.array_of_bullets:
+            for alien in self.array_of_aliens:
+                if self.collides(bullet, alien):
+                    self.remove_widget(bullet)
+                    self.array_of_bullets.remove(bullet)
+                    self.remove_widget(alien)
+                    self.array_of_aliens.remove(alien)
+                    return  
+
+    def collides(self, rect1, rect2):
+        r1x, r1y = rect1.pos
+        r2x, r2y = rect2.pos
+        r1w, r1h = rect1.size
+        r2w, r2h = rect2.size
+
+        return r1x < r2x + r2w and r1x + r1w > r2x and r1y < r2y + r2h and r1y + r1h > r2y
+    
+    def _on_keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self.on_key_down)
+        self._keyboard.unbind(on_key_up=self.on_key_up)
+        self._keyboard = None
 
     def _on_keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self.on_key_down)
         self._keyboard.unbind(on_key_up=self.on_key_up)
         self._keyboard = None
 
-    def on_key_down(self, keyboard, keycode, text, modifiers): #กดคีย์บอร์ด
+    def on_key_down(self, keyboard, keycode, text, modifiers):
         self.pressed_keys.add(keycode[1])
 
-    def on_key_up(self, keyboard, keycode): #ไม่กดคีย์บอร์ด
+    def on_key_up(self, keyboard, keycode):
         if keycode[1] in self.pressed_keys:
             self.pressed_keys.remove(keycode[1])
+
 
     def process_keys(self, dt): #เลื่อนซ้ายขวา
         cur_x = self.player.x
@@ -113,6 +132,9 @@ class Game(Widget):
             new_life.pos = (Window.width - (i * Window.width / 15) - (i * spacing), Window.height - Window.width / 15)
             self.array_of_lives.append(new_life)
             self.add_widget(new_life)
+
+        if not self.array_of_bullets:
+            self.bullet_on_screen = False
 
 class SpaceInvadersApp(App):
     def build(self):
