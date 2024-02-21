@@ -122,8 +122,8 @@ class Game(Widget):
 
         if self.pressed_keys.issuperset({'spacebar'}):
             if not self.bullet_on_screen:
-                self.sound = SoundLoader.load('sound/laser.mp3')
-                self.sound.play()
+                self.sound = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
+                self.sound.play() #เล่นเสียง
                 new_bullet = Bullet()
                 self.add_widget(new_bullet)
                 new_bullet.size = (self.width / 60, self.width / 16)
