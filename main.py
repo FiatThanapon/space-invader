@@ -45,6 +45,8 @@ class Game(Widget):
     number_of_lives = 3
     array_of_lives = []
     array_of_aliens = []
+    laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
+    bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -56,7 +58,9 @@ class Game(Widget):
         self.create_aliens()
         Clock.schedule_interval(self.process_keys, 0)
         Clock.schedule_interval(self.check_collisions, 0)
-    
+        self.bg.loop = True  # Loop bg sound
+        self.bg.play() #play bg sound
+
     def create_aliens(self):
         x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
         y_start = self.height + 500 #เปลี่ยนตำแหน่ง x
@@ -122,8 +126,7 @@ class Game(Widget):
 
         if self.pressed_keys.issuperset({'spacebar'}):
             if not self.bullet_on_screen:
-                self.sound = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
-                self.sound.play() #เล่นเสียง
+                self.laser.play() #เล่นเสียงlaser
                 new_bullet = Bullet()
                 self.add_widget(new_bullet)
                 new_bullet.size = (self.width / 60, self.width / 16)
