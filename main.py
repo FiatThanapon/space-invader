@@ -35,17 +35,6 @@ class Alien_bullet(Widget):
                             self.animation_down.stop(self)
                             go_on = False
 
-        if go_on:
-            if self.parent:
-                for bit in self.parent.array_of_bits:
-                    if self.collide_widget(bit):
-                        position_in_array = self.parent.array_of_bits.index(bit)
-                        del self.parent.array_of_bits[position_in_array]
-                        self.parent.remove_widget(bit)
-                        self.animation_down.stop(self)
-                        go_on = False
-
-
     def remove_missile(self, *args):
         if self.parent:
             self.parent.remove_widget(self)
@@ -188,17 +177,16 @@ class Game(Widget):
         if not self.array_of_bullets:
             self.bullet_on_screen = False
 
-    def shoot_missile(self, instance):
+    def alien_shoot_missile(self, instance):
         new_missile = Alien_bullet()
 
         self.add_widget(new_missile)
         new_missile.size = (self.parent.size[0] / 60, self.parent.size[0] / 10)
         new_missile.pos = (instance.pos[0] + instance.size[0] / 2 - (self.parent.size[0] / 100),
                            instance.pos[1] - (self.parent.size[0] / 20))
-        # new_missile.move_down() ให้เอเลี่ยนขยับ
+        new_missile.move_down() #ตรงนี้ทำให้กระสุนเอเลียนขยับ
 
     def aliens_shooting(self, *args):
-
         x_coordinates_array = []
         for invader in self.array_of_aliens:
             x_coordinates_array.append(invader.pos[0])
@@ -219,7 +207,7 @@ class Game(Widget):
             for saucer in group:
                 chance_variable = random.randint(1, 3)
                 if saucer.pos[1] == lowest_y and chance_variable == 1:
-                    self.shoot_missile(saucer)
+                    self.alien_shoot_missile(saucer)
                     pass
 
 class SpaceInvadersApp(App):
