@@ -4,13 +4,16 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.animation import Animation
+from kivy.core.audio import SoundLoader
 
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
+
 class Alien(Widget):
     pass
+
 
 class Bullet(Widget):
     def __init__(self, **kwargs):
@@ -119,6 +122,8 @@ class Game(Widget):
 
         if self.pressed_keys.issuperset({'spacebar'}):
             if not self.bullet_on_screen:
+                self.sound = SoundLoader.load('sound/laser.mp3')
+                self.sound.play()
                 new_bullet = Bullet()
                 self.add_widget(new_bullet)
                 new_bullet.size = (self.width / 60, self.width / 16)
