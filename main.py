@@ -10,8 +10,46 @@ import random
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
+
 class Alien_bullet(Widget):
-    pass
+    def move_down(self, *args):
+        self.animation_down = Animation(x=self.pos[0], y=-self.size[1], duration=2)
+        self.animation_down.bind(on_progress=self.on_route)
+        self.animation_down.bind(on_complete=self.remove_missile)
+        self.animation_down.start(self)
+
+    def on_route(self, *args):
+
+        go_on = True
+
+        if go_on:
+            if self.parent:
+                if self.parent.array_of_bullets != []:
+                    for bullet in self.parent.array_of_bullets:
+                        if self.collide_widget(bullet):
+
+                            position_in_array = self.parent.array_of_bullets.index(bullet)
+                            del self.parent.array_of_bullets[position_in_array]
+                            self.parent.bullet_on_screen = False
+                            self.parent.remove_widget(bullet)
+                            self.animation_down.stop(self)
+                            go_on = False
+
+        if go_on:
+            if self.parent:
+                for bit in self.parent.array_of_bits:
+                    if self.collide_widget(bit):
+                        position_in_array = self.parent.array_of_bits.index(bit)
+                        del self.parent.array_of_bits[position_in_array]
+                        self.parent.remove_widget(bit)
+                        self.animation_down.stop(self)
+                        go_on = False
+
+
+    def remove_missile(self, *args):
+        if self.parent:
+            self.parent.remove_widget(self)
+
 
 class Alien(Widget):
     pass
@@ -58,9 +96,9 @@ class Game(Widget):
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
         self.create_aliens()
-        Clock.schedule_interval(self.process_keys, 0)
-        Clock.schedule_interval(self.check_collisions, 0)
-        Clock.schedule_interval(self.aliens_shooting, 1)
+        Clock.schedule_interval(self.process_keys, 1/60)
+        Clock.schedule_interval(self.check_collisions, 1/60)
+        Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
@@ -150,13 +188,17 @@ class Game(Widget):
         if not self.array_of_bullets:
             self.bullet_on_screen = False
 
-    def shoot_missile(self, saucer):
-        new_bullet = Alien_bullet()  
-        new_bullet.size = (self.width / 60, self.width / 16)
-        new_bullet.pos = (saucer.center_x - (self.width / 160), saucer.y - (self.width / 16))
-        self.add_widget(new_bullet)
+    def shoot_missile(self, instance):
+        new_missile = Alien_bullet()
+
+        self.add_widget(new_missile)
+        new_missile.size = (self.parent.size[0] / 60, self.parent.size[0] / 10)
+        new_missile.pos = (instance.pos[0] + instance.size[0] / 2 - (self.parent.size[0] / 100),
+                           instance.pos[1] - (self.parent.size[0] / 20))
+        # new_missile.move_down() ให้เอเลี่ยนขยับ
 
     def aliens_shooting(self, *args):
+
         x_coordinates_array = []
         for invader in self.array_of_aliens:
             x_coordinates_array.append(invader.pos[0])
@@ -178,6 +220,7 @@ class Game(Widget):
                 chance_variable = random.randint(1, 3)
                 if saucer.pos[1] == lowest_y and chance_variable == 1:
                     self.shoot_missile(saucer)
+                    pass
 
 class SpaceInvadersApp(App):
     def build(self):
