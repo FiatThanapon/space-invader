@@ -5,11 +5,13 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
+import random
 
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
-
+class Alien_bullet(Widget):
+    pass
 
 class Alien(Widget):
     pass
@@ -58,6 +60,7 @@ class Game(Widget):
         self.create_aliens()
         Clock.schedule_interval(self.process_keys, 0)
         Clock.schedule_interval(self.check_collisions, 0)
+        Clock.schedule_interval(self.aliens_shooting, 1)
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
@@ -146,6 +149,35 @@ class Game(Widget):
 
         if not self.array_of_bullets:
             self.bullet_on_screen = False
+
+    def shoot_missile(self, saucer):
+        new_bullet = Alien_bullet()  
+        new_bullet.size = (self.width / 60, self.width / 16)
+        new_bullet.pos = (saucer.center_x - (self.width / 160), saucer.y - (self.width / 16))
+        self.add_widget(new_bullet)
+
+    def aliens_shooting(self, *args):
+        x_coordinates_array = []
+        for invader in self.array_of_aliens:
+            x_coordinates_array.append(invader.pos[0])
+
+        unique_arrays_x = []
+        for value in set(x_coordinates_array):
+            temp_array = []
+            for invader in self.array_of_aliens:
+                if invader.pos[0] == value:
+                    temp_array.append(invader)
+            unique_arrays_x.append(temp_array)
+
+        for group in unique_arrays_x:
+            y_vals = []
+            for saucer in group:
+                y_vals.append(saucer.pos[1])
+            lowest_y = min(y_vals)
+            for saucer in group:
+                chance_variable = random.randint(1, 3)
+                if saucer.pos[1] == lowest_y and chance_variable == 1:
+                    self.shoot_missile(saucer)
 
 class SpaceInvadersApp(App):
     def build(self):
