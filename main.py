@@ -19,29 +19,22 @@ class Alien_bullet(Widget):
         self.animation_down.start(self)
 
     def on_route(self, *args):
-
-        go_on = True
-
-        if go_on:
-            if self.parent:
-                if self.parent.array_of_bullets != []:
-                    for bullet in self.parent.array_of_bullets:
-                        if self.collide_widget(bullet):
-
-                            position_in_array = self.parent.array_of_bullets.index(bullet)
-                            del self.parent.array_of_bullets[position_in_array]
-                            self.parent.bullet_on_screen = False
-                            self.parent.remove_widget(bullet)
-                            self.animation_down.stop(self)
-                            go_on = False
-
+        if self.parent and self.parent.array_of_bullets:
+            for bullet in self.parent.array_of_bullets:
+                if self.collides(bullet):
+                    self.parent.array_of_bullets.remove(bullet)
+                    self.parent.remove_widget(bullet)
+                    self.parent.remove_widget(self)
+                    return
 
     def remove_missile(self, *args):
+        print("Removing missile")
         if self.parent and self in self.parent.array_of_alien_bullets:
             self.parent.array_of_alien_bullets.remove(self)
         if self.parent:
             self.parent.bullet_on_screen = False
             self.parent.remove_widget(self)
+
 
 
 class Alien(Widget):
@@ -141,10 +134,11 @@ class Game(Widget):
             if self and self.collides(bullet, self.player):
                 self.number_of_lives -= 1
                 if self.array_of_lives:
-                    widget_to_remove = self.array_of_lives[-1]
-                    self.remove_widget(widget_to_remove)
+                    Life = self.array_of_lives[-1]
+                    self.remove_widget(Life)
                     del self.array_of_lives[-1]
-                self.array_of_alien_bullets.remove(bullet)
+                self.remove_widget(bullet) #ทำให้ภาพกระสุนหายไปเมื่อชน
+                self.array_of_alien_bullets.remove(bullet) #ทำให้ออปเจ็คของกระสุนหายไปเมื่อชน จะไม่ทำให้เกิดการชนซ้ำ
                 
 
 
