@@ -35,8 +35,11 @@ class Alien_bullet(Widget):
                             self.animation_down.stop(self)
                             go_on = False
 
+
     def remove_missile(self, *args):
         if self.parent:
+            self.parent.bullet_on_screen = False
+            self.parent.array_of_alien_bullets.remove(self)
             self.parent.remove_widget(self)
 
 
@@ -71,8 +74,9 @@ class Game(Widget):
     travel_direction = 'right'
     bullet_on_screen = False
     array_of_bullets = []
-    number_of_lives = 3
+    array_of_alien_bullets = [] #เพิ่มarrayของกระสุนเอเลี่ยน
     array_of_lives = []
+    number_of_lives = len(array_of_lives)
     array_of_aliens = []
     laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
     bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
@@ -85,8 +89,9 @@ class Game(Widget):
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
         self.create_aliens()
+        self.create_Life()
         Clock.schedule_interval(self.process_keys, 1/60)
-        Clock.schedule_interval(self.check_collisions, 1/60)
+        Clock.schedule_interval(self.check_hero_bullet_collisions, 1/60)
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
@@ -104,8 +109,19 @@ class Game(Widget):
                 new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens) #ตัวกำหนดตำแหน่ง
                 self.array_of_aliens.append(new_alien)
                 self.add_widget(new_alien)
-    
-    def check_collisions(self, dt):
+
+    def create_Life(self):
+        spacing = self.width / 2.5 #เปลี่ยนระยะห่าง 
+        pos_y = self.width + 570 #เปลี่ยนตำแหน่ง y
+        pos_x = self.width + 380 #เปลี่ยนตำแหน่ง x
+        for i in range(1, 4):
+            new_life = Life()
+            new_life.size = (self.width / 3, self.width / 3)
+            new_life.pos = (pos_x - (i * spacing), pos_y)
+            self.array_of_lives.append(new_life)
+            self.add_widget(new_life)
+
+    def check_hero_bullet_collisions(self, dt):
         #ตรวจสอบการชนกันระหว่างกระสุนกับเอเลี่ยน
         for bullet in self.array_of_bullets:
             for alien in self.array_of_aliens:
@@ -116,6 +132,20 @@ class Game(Widget):
                     self.remove_widget(alien)
                     self.array_of_aliens.remove(alien)
                     return  
+                
+    def check_alien_bullet_collisions(self, dt):
+        #ตรวจสอบกระสุนเอเลี่ยนว่าชนกับตัวเราไหม
+        for bullet in self.array_of_alien_bullets:
+            if self.parent:
+                if self.collides(bullet,self.player):
+                    self.parent.number_of_lives -= 1
+
+                    if self.parent.array_of_lives != []:
+                        widget_to_remove = self.parent.array_of_lives[0]
+                        self.parent.remove_widget(widget_to_remove)
+                        del self.parent.array_of_lives[0]
+                    self.animation_down.stop(self)
+
 
     def collides(self, rect1, rect2):
         #ตรวจสอบว่า rect1 และ rect2 ทับซ้อนกันหรือไม่
@@ -166,16 +196,9 @@ class Game(Widget):
                 self.bullet_on_screen = True
         self.player.x = cur_x
 
-        spacing = Window.width / 40
-        for i in range(1, 4):
-            new_life = Life()
-            new_life.size = (Window.width / 15, Window.width / 15)
-            new_life.pos = (Window.width - (i * Window.width / 15) - (i * spacing), Window.height - Window.width / 15)
-            self.array_of_lives.append(new_life)
-            self.add_widget(new_life)
-
         if not self.array_of_bullets:
             self.bullet_on_screen = False
+
 
     def alien_shoot_missile(self, instance):
         new_missile = Alien_bullet()
@@ -185,6 +208,7 @@ class Game(Widget):
         new_missile.pos = (instance.pos[0] + instance.size[0] / 2 - (self.parent.size[0] / 100),
                            instance.pos[1] - (self.parent.size[0] / 20))
         new_missile.move_down() #ตรงนี้ทำให้กระสุนเอเลียนขยับ
+        self.array_of_alien_bullets.append(new_missile)
 
     def aliens_shooting(self, *args):
         x_coordinates_array = []
