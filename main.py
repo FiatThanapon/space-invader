@@ -91,6 +91,13 @@ class Game(Widget):
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
+    def check_loss(self, *args):
+        if self.number_of_lives <= 0:
+            if self.parent.parent:
+                # self.sound_track.stop()
+                # self.reset()
+                self.parent.parent.current = 'Loss'
+
     def create_aliens(self):
         x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
         y_start = self.height + 500 #เปลี่ยนตำแหน่ง x
