@@ -5,11 +5,25 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
+from kivy.uix.screenmanager import Screen, ScreenManager
 import random
 
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
+
+
+class GameScreen(Screen):
+    pass
+
+
+class SecondScreen(Screen):
+    pass
+
+
+class ThirdScreen(Screen):
+    pass
+
 
 class Alien_bullet(Widget):
     def move_down(self, *args):
@@ -240,7 +254,11 @@ class Game(Widget):
 
 class SpaceInvadersApp(App):
     def build(self):
-        return Game()
+        sm = ScreenManager()
+        sm.add_widget(PlayScreen(name='Play'))
+        sm.add_widget(LossScreen(name='Loss'))
+        sm.add_widget(WinScreen(name='Win'))
+        return sm
 
 if __name__ == '__main__':
     SpaceInvadersApp().run()
