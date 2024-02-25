@@ -37,9 +37,10 @@ class Alien_bullet(Widget):
 
 
     def remove_missile(self, *args):
+        if self.parent and self in self.parent.array_of_alien_bullets:
+            self.parent.array_of_alien_bullets.remove(self)
         if self.parent:
             self.parent.bullet_on_screen = False
-            self.parent.array_of_alien_bullets.remove(self)
             self.parent.remove_widget(self)
 
 
@@ -91,8 +92,9 @@ class Game(Widget):
         self.create_aliens()
         self.create_Life()
         Clock.schedule_interval(self.process_keys, 1/60)
-        Clock.schedule_interval(self.check_hero_bullet_collisions, 1/60)
+        Clock.schedule_interval(self.check_hero_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่ายิงโดนไหม
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
+        Clock.schedule_interval(self.check_alien_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่าโดนกระสุนเอเลี่ยนไหม
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
@@ -132,19 +134,18 @@ class Game(Widget):
                     self.remove_widget(alien)
                     self.array_of_aliens.remove(alien)
                     return  
-                
+    
     def check_alien_bullet_collisions(self, dt):
-        #ตรวจสอบกระสุนเอเลี่ยนว่าชนกับตัวเราไหม
+    # Check if alien bullets collide with the player
         for bullet in self.array_of_alien_bullets:
-            if self.parent:
-                if self.collides(bullet,self.player):
-                    self.parent.number_of_lives -= 1
-
-                    if self.parent.array_of_lives != []:
-                        widget_to_remove = self.parent.array_of_lives[0]
-                        self.parent.remove_widget(widget_to_remove)
-                        del self.parent.array_of_lives[0]
-                    self.animation_down.stop(self)
+            if self and self.collides(bullet, self.player):
+                self.number_of_lives -= 1
+                if self.array_of_lives:
+                    widget_to_remove = self.array_of_lives[-1]
+                    self.remove_widget(widget_to_remove)
+                    del self.array_of_lives[-1]
+                self.array_of_alien_bullets.remove(bullet)
+                
 
 
     def collides(self, rect1, rect2):
