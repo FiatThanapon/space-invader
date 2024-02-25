@@ -5,24 +5,11 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
-from kivy.uix.screenmanager import Screen, ScreenManager
 import random
 
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
-
-
-class PlayScreen(Screen):
-    pass
-
-
-class LossScreen(Screen):
-    pass
-
-
-class WinScreen(Screen):
-    pass
 
 
 class Alien_bullet(Widget):
@@ -40,7 +27,7 @@ class Alien_bullet(Widget):
                     self.parent.remove_widget(bullet)
                     self.parent.remove_widget(self)
                     return
-
+                
     def remove_missile(self, *args):
         print("Removing missile")
         if self.parent and self in self.parent.array_of_alien_bullets:
@@ -48,7 +35,6 @@ class Alien_bullet(Widget):
         if self.parent:
             self.parent.bullet_on_screen = False
             self.parent.remove_widget(self)
-
 
 
 class Alien(Widget):
@@ -59,24 +45,25 @@ class Bullet(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.continue_on = True
-
     def move_up(self, *args):
         if self.parent:
             self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=1.0) # เพิ่ม duration เพื่อไม่ให้ player ยิงได้เร็วเกินไป
             self.animation_up.bind(on_complete=self.remove_bullet)
             self.animation_up.start(self)
-
     def remove_bullet(self, *args):
         if self.parent:
             self.parent.bullet_on_screen = False
             self.parent.array_of_bullets.remove(self)
             self.parent.remove_widget(self)
 
+
 class Player(Widget):
     pass
 
+
 class Life(Widget):
     pass
+
 
 class Game(Widget):
     travel_direction = 'right'
@@ -90,8 +77,8 @@ class Game(Widget):
     bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
+        super().__init__(**kwargs)
         self._keyboard = Window.request_keyboard(self._on_keyboard_closed, self) 
         self._keyboard.bind(on_key_down=self.on_key_down) #เชื่อมกับคีย์บอร์ด
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
@@ -105,11 +92,15 @@ class Game(Widget):
         Clock.schedule_interval(self.check_alien_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่าโดนกระสุนเอเลี่ยนไหม
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
-
+        
+    """
     def check_loss(self, *args):
         if self.number_of_lives <= 0:
             if self.parent.parent:
+                # self.sound_track.stop()
+                # self.reset()
                 self.parent.parent.current = 'Loss'
+    """
 
     def create_aliens(self):
         x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
@@ -135,9 +126,10 @@ class Game(Widget):
             new_life.pos = (pos_x - (i * spacing), pos_y)
             self.array_of_lives.append(new_life)
             self.add_widget(new_life)
+
         self.number_of_lives = len(self.array_of_lives)
         return self.number_of_lives #คืนจำนวนของชีวิต
-    
+
     def check_hero_bullet_collisions(self, dt):
         #ตรวจสอบการชนกันระหว่างกระสุนกับเอเลี่ยน
         for bullet in self.array_of_bullets:
@@ -163,15 +155,12 @@ class Game(Widget):
                 self.remove_widget(bullet) #ทำให้ภาพกระสุนหายไปเมื่อชน
                 self.array_of_alien_bullets.remove(bullet) #ทำให้ออปเจ็คของกระสุนหายไปเมื่อชน จะไม่ทำให้เกิดการชนซ้ำ
                 
-
-
     def collides(self, rect1, rect2):
         #ตรวจสอบว่า rect1 และ rect2 ทับซ้อนกันหรือไม่
         r1x, r1y = rect1.pos
         r2x, r2y = rect2.pos
         r1w, r1h = rect1.size
         r2w, r2h = rect2.size
-
         return r1x < r2x + r2w and r1x + r1w > r2x and r1y < r2y + r2h and r1y + r1h > r2y
     
     def _on_keyboard_closed(self):
@@ -190,7 +179,6 @@ class Game(Widget):
     def on_key_up(self, keyboard, keycode):
         if keycode[1] in self.pressed_keys:
             self.pressed_keys.remove(keycode[1])
-
 
     def process_keys(self, dt): #เลื่อนซ้ายขวา
         cur_x = self.player.x
@@ -212,15 +200,14 @@ class Game(Widget):
                 self.array_of_bullets.append(new_bullet)
                 new_bullet.move_up()
                 self.bullet_on_screen = True
+
         self.player.x = cur_x
 
         if not self.array_of_bullets:
             self.bullet_on_screen = False
 
-
     def alien_shoot_missile(self, instance):
         new_missile = Alien_bullet()
-
         self.add_widget(new_missile)
         new_missile.size = (self.parent.size[0] / 60, self.parent.size[0] / 10)
         new_missile.pos = (instance.pos[0] + instance.size[0] / 2 - (self.parent.size[0] / 100),
@@ -230,10 +217,11 @@ class Game(Widget):
 
     def aliens_shooting(self, *args):
         x_coordinates_array = []
+
         for invader in self.array_of_aliens:
             x_coordinates_array.append(invader.pos[0])
-
         unique_arrays_x = []
+        
         for value in set(x_coordinates_array):
             temp_array = []
             for invader in self.array_of_aliens:
@@ -254,11 +242,7 @@ class Game(Widget):
 
 class SpaceInvadersApp(App):
     def build(self):
-        sm = ScreenManager()
-        sm.add_widget(PlayScreen(name='Play'))
-        sm.add_widget(LossScreen(name='Loss'))
-        sm.add_widget(WinScreen(name='Win'))
-        return sm
-
+        return Game()
+        
 if __name__ == '__main__':
     SpaceInvadersApp().run()
