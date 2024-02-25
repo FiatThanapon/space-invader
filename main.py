@@ -84,6 +84,7 @@ class Game(Widget):
         self.pressed_keys = set()
         self.create_aliens()
         self.create_Life()
+        print(self.number_of_lives)
         Clock.schedule_interval(self.process_keys, 1/60)
         Clock.schedule_interval(self.check_hero_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่ายิงโดนไหม
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
@@ -94,8 +95,6 @@ class Game(Widget):
     def check_loss(self, *args):
         if self.number_of_lives <= 0:
             if self.parent.parent:
-                # self.sound_track.stop()
-                # self.reset()
                 self.parent.parent.current = 'Loss'
 
     def create_aliens(self):
@@ -122,7 +121,9 @@ class Game(Widget):
             new_life.pos = (pos_x - (i * spacing), pos_y)
             self.array_of_lives.append(new_life)
             self.add_widget(new_life)
-
+        self.number_of_lives = len(self.array_of_lives)
+        return self.number_of_lives #คืนจำนวนของชีวิต
+    
     def check_hero_bullet_collisions(self, dt):
         #ตรวจสอบการชนกันระหว่างกระสุนกับเอเลี่ยน
         for bullet in self.array_of_bullets:
@@ -140,6 +141,7 @@ class Game(Widget):
         for bullet in self.array_of_alien_bullets:
             if self and self.collides(bullet, self.player):
                 self.number_of_lives -= 1
+                print(self.number_of_lives)
                 if self.array_of_lives:
                     Life = self.array_of_lives[-1]
                     self.remove_widget(Life)
