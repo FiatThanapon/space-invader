@@ -13,15 +13,15 @@ Builder.load_file('design.kv')
 Window.size = (500, 700)
 
 
-class GameScreen(Screen):
+class PlayScreen(Screen):
     pass
 
 
-class SecondScreen(Screen):
+class LossScreen(Screen):
     pass
 
 
-class ThirdScreen(Screen):
+class WinScreen(Screen):
     pass
 
 
