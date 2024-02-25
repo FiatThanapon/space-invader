@@ -35,7 +35,7 @@ class Alien_bullet(Widget):
     def on_route(self, *args):
         if self.parent and self.parent.array_of_bullets:
             for bullet in self.parent.array_of_bullets:
-                if self.collides(bullet):
+                if self.collide_widget(bullet):
                     self.parent.array_of_bullets.remove(bullet)
                     self.parent.remove_widget(bullet)
                     self.parent.remove_widget(self)
