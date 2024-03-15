@@ -6,6 +6,7 @@ from kivy.lang import Builder
 from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
 import random
+from kivy.uix.screenmanager import Screen, ScreenManager
 
 Builder.load_file('design.kv')
 
