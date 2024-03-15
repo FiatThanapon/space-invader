@@ -267,9 +267,17 @@ class Game(Widget):
                     self.alien_shoot_missile(saucer)
                     pass
 
+class GameScreen(Screen):
+    pass
+
 class SpaceInvadersApp(App):
     def build(self):
-        return Game()
+        sm = ScreenManager()
+        sm.add_widget(GameScreen(name='game'))
+        sm.add_widget(SecondScreen(name='second'))
+        sm.add_widget(ThirdScreen(name='third'))
+        return sm
+
         
 if __name__ == '__main__':
     SpaceInvadersApp().run()
