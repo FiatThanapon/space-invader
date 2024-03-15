@@ -63,11 +63,11 @@
                 size: self.size
                 pos: self.pos
 
-<LossScreen>:
-    name:'Loss'
- canvas:
+<SecondScreen>:
+    name:'second'
+    canvas:
         Rectangle:
-            source:'background_4.PNG'
+            source:'image/background.png'
             size:self.size
             pos:self.pos
 
@@ -101,11 +101,11 @@
         size_hint:0.5,0.1
         on_press:app.stop()
 
-<WinScreen>:
-    name:'Win'
+<ThirdScreen>:
+    name:'third'
     canvas:
         Rectangle:
-            source:'background_4.PNG'
+            source:'image/background.png'
             size:self.size
             pos:self.pos
 

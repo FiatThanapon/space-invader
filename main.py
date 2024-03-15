@@ -7,11 +7,45 @@ from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
 import random
 from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.label import Label
 
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
+class SecondScreen(Screen):
+
+    def game_reset(self, *args):
+        third_screen = self.manager.get_screen('third')
+        third_screen.reset()
+        game_screen = self.manager.get_screen('game')
+        my_game = game_screen.children[0]
+        my_game.reset()
+        self.parent.current = 'game'
+
+class ThirdScreen(Screen):
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.consec_wins = 0
+        self.streak_label = Label(text=f"WINNING STREAK: {self.consec_wins}",font_size=(Window.width/20),color=(255 / 255, 232 / 255, 31 / 255, 1),\
+                             pos_hint={'center_x': 0.3, 'center_y': 0.95},font_name="starwars_4")
+
+        self.add_widget(self.streak_label)
+
+    def reset(self,*args):
+        self.consec_wins = 0
+
+    def game_reset(self, *args):
+        game_screen = self.manager.get_screen('game')
+        my_game = game_screen.children[0]
+        my_game.reset()
+        self.parent.current = 'game'
+
+    def on_pre_enter(self):
+        self.consec_wins += 1
+
+        self.streak_label.text = f"WINNING STREAK: {self.consec_wins}"
 
 class Alien_bullet(Widget):
     def move_down(self, *args):
@@ -93,15 +127,7 @@ class Game(Widget):
         Clock.schedule_interval(self.check_alien_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่าโดนกระสุนเอเลี่ยนไหม
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
-        
-    """
-    def check_loss(self, *args):
-        if self.number_of_lives <= 0:
-            if self.parent.parent:
-                # self.sound_track.stop()
-                # self.reset()
-                self.parent.parent.current = 'Loss'
-    """
+
 
     def create_aliens(self):
         x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
