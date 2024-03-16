@@ -8,6 +8,7 @@ from kivy.core.audio import SoundLoader
 import random
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.label import Label
+from kivy.graphics import Rectangle, Color
 
 Builder.load_file('design.kv')
 
@@ -68,6 +69,67 @@ class Life(Widget):
 
 class Player(Widget):
     pass
+
+class Explosion(Widget):
+
+    def sequence_of_sprites(self, *args):
+        self.animation_stage_1 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_1.bind(on_complete=self.animation_stage2)
+        self.animation_stage_1.start(self)
+
+    def animation_stage2(self, *args):
+        with self.canvas:
+            Rectangle(source='image/second_stage_2.PNG', size=(self.size), pos=(self.pos))
+        self.animation_stage_2 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_2.bind(on_complete=self.animation_stage3)
+        self.animation_stage_2.start(self)
+
+    def animation_stage3(self, *args):
+        with self.canvas:
+            Rectangle(source='image/third_stage_2.PNG', size=(self.size), pos=(self.pos))
+        self.animation_stage_3 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_3.bind(on_complete=self.animation_stage4)
+        self.animation_stage_3.start(self)
+
+    def animation_stage4(self, *args):
+        with self.canvas:
+            Rectangle(source='image/fourth_stage_2.PNG', size=(self.size), pos=(self.pos))
+        self.animation_stage_4 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_4.bind(on_complete=self.animation_stage5)
+        self.animation_stage_4.start(self)
+
+    def animation_stage5(self, *args):
+        with self.canvas:
+            Rectangle(source='image/fifth_stage_2.png', size=(self.size), pos=(self.pos))
+        self.animation_stage_5 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_5.bind(on_complete=self.animation_stage6)
+        self.animation_stage_5.start(self)
+
+    def animation_stage6(self, *args):
+        with self.canvas:
+            Rectangle(source='image/sixth_stage_2.PNG', size=(self.size), pos=(self.pos))
+        self.animation_stage_6 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_6.bind(on_complete=self.animation_stage7)
+        self.animation_stage_6.start(self)
+
+    def animation_stage7(self, *args):
+        with self.canvas:
+            Rectangle(source='image/seventh_stage_2.PNG', size=(self.size), pos=(self.pos))
+        self.animation_stage_7 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_7.bind(on_complete=self.animation_stage8)
+        self.animation_stage_7.start(self)
+
+    def animation_stage8(self, *args):
+        with self.canvas:
+            Rectangle(source='image/eigth_stage_2.PNG', size=(self.size), pos=(self.pos))
+        self.animation_stage_8 = Animation(x=self.pos[0], y=self.pos[1], duration=0.01)
+        self.animation_stage_8.bind(on_complete=self.remove_explosion_object)
+        self.animation_stage_8.start(self)
+
+    def remove_explosion_object(self, *args):
+        if self.parent:
+            self.parent.remove_widget(self)
+
 
 class Alien_bullet(Widget):
     def move_down(self, *args):
@@ -141,7 +203,7 @@ class Alien(Widget):
 
 
 class Bullet(Widget):
-    sound_bump_invader_death = MultiAudio('invader_death_3_2.m4a', 10)
+    sound_bump_invader_death = MultiAudio('sound/invader_death_3_2.m4a', 10)
     continue_on = True
 
     def move_up(self, *args):
@@ -193,6 +255,7 @@ class Game(Widget):
     array_of_lives = []
     number_of_lives = len(array_of_lives)
     array_of_aliens = []
+    array_of_bits = []
     laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
     bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
 
