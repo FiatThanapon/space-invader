@@ -13,6 +13,19 @@ Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
+class MultiAudio:
+    _next = 0
+
+    def __init__(self, filename, count):
+        self.buf = [SoundLoader.load(filename)
+                    for _ in range(count)]
+
+    def play(self, *args):
+        self._next = (self._next + 1) % len(self.buf)
+
+    def stop(self,*args):
+        self.buf[self._next].stop()
+
 class GameScreen(Screen):
     pass
 
@@ -128,19 +141,49 @@ class Alien(Widget):
 
 
 class Bullet(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.continue_on = True
+    sound_bump_invader_death = MultiAudio('invader_death_3_2.m4a', 10)
+    continue_on = True
+
     def move_up(self, *args):
         if self.parent:
-            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=1.0) # เพิ่ม duration เพื่อไม่ให้ player ยิงได้เร็วเกินไป
+            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=0.75)
             self.animation_up.bind(on_complete=self.remove_bullet)
+            self.animation_up.bind(on_progress=self.on_travel)
             self.animation_up.start(self)
+
     def remove_bullet(self, *args):
         if self.parent:
             self.parent.bullet_on_screen = False
-            self.parent.array_of_bullets.remove(self)
+            del self.parent.array_of_bullets[0]
             self.parent.remove_widget(self)
+
+    def on_travel(self, *args):
+        go_on = True
+
+        if self.parent:
+            for bit in self.parent.array_of_bits:
+                if self.collide_widget(bit):
+                    position_in_array = self.parent.array_of_bits.index(bit)
+                    del self.parent.array_of_bits[position_in_array]
+                    self.parent.remove_widget(bit)
+                    self.animation_up.stop(self)
+                    go_on = False
+
+            if go_on:
+                for invader in self.parent.array_of_aliens:
+                    if self.collide_widget(invader):
+                        position_in_array = self.parent.array_of_aliens.index(invader)
+                        self.sound_bump_invader_death.play()
+                        new_explosion = Explosion()
+                        new_explosion.size = (invader.size[0], invader.size[1])
+                        new_explosion.pos = (invader.pos[0], invader.pos[1])
+                        self.parent.add_widget(new_explosion)
+                        new_explosion.sequence_of_sprites()
+
+                        del self.parent.array_of_aliens[position_in_array]
+                        self.parent.remove_widget(invader)
+                        self.animation_up.stop(self)
+                        go_on = False
 
 class Game(Widget):
     travel_direction = 'right'
