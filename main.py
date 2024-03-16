@@ -13,6 +13,9 @@ Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
+class GameScreen(Screen):
+    pass
+
 class SecondScreen(Screen):
 
     def game_reset(self, *args):
@@ -29,7 +32,7 @@ class ThirdScreen(Screen):
         super().__init__(**kw)
         self.consec_wins = 0
         self.streak_label = Label(text=f"WINNING STREAK: {self.consec_wins}",font_size=(Window.width/20),color=(255 / 255, 232 / 255, 31 / 255, 1),\
-                             pos_hint={'center_x': 0.3, 'center_y': 0.95},font_name="starwars_4")
+                             pos_hint={'center_x': 0.3, 'center_y': 0.95},font_name="font/starwars_font")
 
         self.add_widget(self.streak_label)
 
@@ -46,6 +49,12 @@ class ThirdScreen(Screen):
         self.consec_wins += 1
 
         self.streak_label.text = f"WINNING STREAK: {self.consec_wins}"
+
+class Life(Widget):
+    pass
+
+class Player(Widget):
+    pass
 
 class Alien_bullet(Widget):
     def move_down(self, *args):
@@ -73,7 +82,49 @@ class Alien_bullet(Widget):
 
 
 class Alien(Widget):
-    pass
+    important_property = Window.width / 10
+
+    important_array = [Window.width / 10, Window.width / 10 + Window.width / 5,
+                       Window.width / 10 + 2 * Window.width / 5,
+                       Window.width / 10 + 3 * Window.width / 5, Window.width / 10 + 4 * Window.width / 5]
+
+    cols_left = 5
+
+    def move_right_and_down(self, *args):
+        new_x_position_for_invader = self.pos[0] + self.important_property
+        self.animation_right_and_down = Animation(x=new_x_position_for_invader, duration=1.5)
+        self.animation_right_and_down.bind(on_complete=self.intermediary_1)
+        self.animation_right_and_down.start(self)
+
+    def intermediary_1(self, *args):
+        if self.parent:
+
+            self.important_property = self.parent.leftmost_x
+            for value in self.important_array:
+                if value - 5 <= self.important_property <= value + 5:
+                    self.important_property = value
+
+            self.animation_down = Animation(y=self.pos[1] - self.size[1] / 2.5, duration=0.4)
+            self.animation_down.bind(on_complete=self.move_left_and_down)
+            self.animation_down.start(self)
+
+    def move_left_and_down(self, *args):
+        new_x_position_for_invader = self.pos[0] - self.important_property
+        self.animation_left_and_down = Animation(x=new_x_position_for_invader, duration=1.5)
+        self.animation_left_and_down.bind(on_complete=self.intermediary_2)
+        self.animation_left_and_down.start(self)
+
+    def intermediary_2(self, *args):
+        if self.parent:
+
+            self.important_property = Window.width - (self.parent.rightmost_x) - self.size[0]
+            for value in self.important_array:
+                if value - 5 <= self.important_property <= value + 5:
+                    self.important_property = value
+
+            self.animation_down = Animation(y=self.pos[1] - self.size[1] / 2.5, duration=0.4)
+            self.animation_down.bind(on_complete=self.move_right_and_down)
+            self.animation_down.start(self)
 
 
 class Bullet(Widget):
@@ -90,15 +141,6 @@ class Bullet(Widget):
             self.parent.bullet_on_screen = False
             self.parent.array_of_bullets.remove(self)
             self.parent.remove_widget(self)
-
-
-class Player(Widget):
-    pass
-
-
-class Life(Widget):
-    pass
-
 
 class Game(Widget):
     travel_direction = 'right'
@@ -267,16 +309,12 @@ class Game(Widget):
                     self.alien_shoot_missile(saucer)
                     pass
 
-class GameScreen(Screen):
-    pass
+
 
 class SpaceInvadersApp(App):
     def build(self):
-        sm = ScreenManager()
-        sm.add_widget(GameScreen(name='game'))
-        sm.add_widget(SecondScreen(name='second'))
-        sm.add_widget(ThirdScreen(name='third'))
-        return sm
+        return Game()
+
 
         
 if __name__ == '__main__':
