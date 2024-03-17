@@ -157,22 +157,12 @@ class Missile(Widget):
 
         if go_on:
             if self.parent:
-                for bit in self.parent.array_of_bits:
-                    if self.collide_widget(bit):
-                        position_in_array = self.parent.array_of_bits.index(bit)
-                        del self.parent.array_of_bits[position_in_array]
-                        self.parent.remove_widget(bit)
-                        self.animation_down.stop(self)
-                        go_on = False
-
-        if go_on:
-            if self.parent:
-                if self.collide_widget(self.parent.ship):
+                if self.collide_widget(self.parent.player):
                     self.sound_bump_damage.play()
                     new_explosion = Explosion()
-                    new_explosion.size = (self.parent.ship.size[0], self.parent.ship.size[1])
+                    new_explosion.size = (self.parent.player.size[0], self.parent.player.size[1])
                     new_explosion.pos = (
-                    self.parent.ship.pos[0], self.parent.ship.pos[1] + self.parent.ship.size[1] / 2)
+                    self.parent.player.pos[0], self.parent.player.pos[1] + self.parent.player.size[1] / 2)
                     self.parent.add_widget(new_explosion)
                     new_explosion.sequence_of_sprites()
                     self.parent.number_of_lives -= 1
@@ -253,16 +243,7 @@ class Bullet(Widget):
 
     def on_travel(self, *args):
         go_on = True
-
         if self.parent:
-            for bit in self.parent.array_of_bits:
-                if self.collide_widget(bit):
-                    position_in_array = self.parent.array_of_bits.index(bit)
-                    del self.parent.array_of_bits[position_in_array]
-                    self.parent.remove_widget(bit)
-                    self.animation_up.stop(self)
-                    go_on = False
-
             if go_on:
                 for invader in self.parent.array_of_aliens:
                     if self.collide_widget(invader):
@@ -287,9 +268,12 @@ class Game(Widget):
     array_of_lives = []
     number_of_lives = len(array_of_lives)
     array_of_aliens = []
-    array_of_bits = []
+    num_cols = 5
+    going_right = True
+    amount_to_animate_by = 0
     laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
     bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
+    sound_bump_missile = MultiAudio('sound/tie_laser_3_2.m4a', 10)
 
     def __init__(self, **kwargs):
 
@@ -305,6 +289,8 @@ class Game(Widget):
         Clock.schedule_interval(self.check_hero_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่ายิงโดนไหม
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
         Clock.schedule_interval(self.check_alien_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่าโดนกระสุนเอเลี่ยนไหม
+        Clock.schedule_interval(self.check_win, 1 / 60)
+        Clock.schedule_interval(self.check_loss, 1 / 60)
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
@@ -414,21 +400,22 @@ class Game(Widget):
             self.bullet_on_screen = False
 
     def alien_shoot_missile(self, instance):
-        new_missile = Alien_bullet()
+        new_missile = Missile()
+        self.sound_bump_missile.play()
+
         self.add_widget(new_missile)
         new_missile.size = (self.parent.size[0] / 60, self.parent.size[0] / 10)
         new_missile.pos = (instance.pos[0] + instance.size[0] / 2 - (self.parent.size[0] / 100),
                            instance.pos[1] - (self.parent.size[0] / 20))
-        new_missile.move_down() #ตรงนี้ทำให้กระสุนเอเลียนขยับ
-        self.array_of_alien_bullets.append(new_missile)
+        new_missile.move_down()
+
 
     def aliens_shooting(self, *args):
         x_coordinates_array = []
-
         for invader in self.array_of_aliens:
             x_coordinates_array.append(invader.pos[0])
+
         unique_arrays_x = []
-        
         for value in set(x_coordinates_array):
             temp_array = []
             for invader in self.array_of_aliens:
@@ -446,6 +433,7 @@ class Game(Widget):
                 if saucer.pos[1] == lowest_y and chance_variable == 1:
                     self.alien_shoot_missile(saucer)
                     pass
+
 
     def check_win(self, *args):
         if self.array_of_aliens == []:
