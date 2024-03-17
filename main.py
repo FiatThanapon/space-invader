@@ -8,8 +8,7 @@ from kivy.core.audio import SoundLoader
 import random
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.label import Label
-from kivy.graphics import Rectangle, Color
-
+from kivy.graphics import Rectangle
 Builder.load_file('design.kv')
 
 Window.size = (500, 700)
@@ -276,46 +275,48 @@ class Game(Widget):
     sound_bump_missile = MultiAudio('sound/tie_laser_3_2.m4a', 10)
 
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
         self._keyboard = Window.request_keyboard(self._on_keyboard_closed, self) 
         self._keyboard.bind(on_key_down=self.on_key_down) #เชื่อมกับคีย์บอร์ด
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
-        self.create_aliens()
-        self.create_Life()
         print(self.number_of_lives)
+
+        self.bg.loop = True  # Loop bg sound
+        self.bg.play() #play bg sound
+
+    def on_size(self, *args):
+        # DEFINING ALIENS
+        x_spacing_between_aliens = self.parent.size[1] / 10
+        y_start = self.parent.size[1] - self.parent.size[1] / 12
+        y_spacing_between_aliens = self.parent.size[1] / 15
+
+        for x in range(5):
+            for y in range(5):
+                new_alien = Alien()
+                new_alien.size = (Window.width / 10, Window.width / 10)
+                new_alien.pos = (x_spacing_between_aliens * x, y_start - y * y_spacing_between_aliens)
+                self.array_of_aliens.append(new_alien)
+
+        # FOR PLAYER
+        self.player.size = (self.parent.size[0] / 6, self.parent.size[0] / 8)
+
+        # IMPORTANT SCHEDULING
         Clock.schedule_interval(self.process_keys, 1/60)
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
         Clock.schedule_interval(self.check_win, 1 / 60)
         Clock.schedule_interval(self.check_loss, 1 / 60)
         Clock.schedule_interval(self.check_player_alien_collision, 1 / 60)
         Clock.schedule_interval(self.number_of_columns_left, 1 / 360)
-        self.bg.loop = True  # Loop bg sound
-        self.bg.play() #play bg sound
 
-
-    def create_aliens(self):
         # ADDING ALIENS
         for invader in self.array_of_aliens:
             self.add_widget(invader)
         # STARTING THE ALIENS MOVING
         for invader in self.array_of_aliens:
             invader.move_right_and_down()
-
-    def number_of_columns_left(self, *args):
-        if self.array_of_aliens != []:
-            x_coordinates_array = []
-            for invader in self.array_of_aliens:
-                x_coordinates_array.append(invader.pos[0])
-            x_coordinates_set = list(set(x_coordinates_array))
-            x_coordinates_set = sorted(x_coordinates_set)
-            self.leftmost_x = min(x_coordinates_set)
-            self.rightmost_x = max(x_coordinates_set)
-            columns_left = len(x_coordinates_set)
-            self.num_cols = columns_left
-    
-    def create_Life(self):
+        
+        # 3 MINI HEARTS REPRESENTING LIVES REMAINING
         spacing = self.width / 2.5 #เปลี่ยนระยะห่าง 
         pos_y = self.width + 570 #เปลี่ยนตำแหน่ง y
         pos_x = self.width + 380 #เปลี่ยนตำแหน่ง x
@@ -344,6 +345,18 @@ class Game(Widget):
             if invader.pos[1] <= (self.player.pos[1] + self.player.size[1]):
                 if self.parent.parent:
                     self.parent.parent.current = 'second'
+    
+    def number_of_columns_left(self, *args):
+        if self.array_of_aliens != []:
+            x_coordinates_array = []
+            for invader in self.array_of_aliens:
+                x_coordinates_array.append(invader.pos[0])
+            x_coordinates_set = list(set(x_coordinates_array))
+            x_coordinates_set = sorted(x_coordinates_set)
+            self.leftmost_x = min(x_coordinates_set)
+            self.rightmost_x = max(x_coordinates_set)
+            columns_left = len(x_coordinates_set)
+            self.num_cols = columns_left
     
     def _on_keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self.on_key_down)
