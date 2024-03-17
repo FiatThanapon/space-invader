@@ -245,7 +245,6 @@ class Game(Widget):
     travel_direction = 'right'
     bullet_on_screen = False
     array_of_bullets = []
-    array_of_alien_bullets = [] #เพิ่มarrayของกระสุนเอเลี่ยน
     array_of_lives = []
     number_of_lives = 3
     array_of_aliens = []
@@ -404,7 +403,68 @@ class Game(Widget):
                     self.alien_shoot_missile(saucer)
                     pass
 
+    def reset(self, *args): 
 
+        self.clear_widgets()
+        self.add_widget(self.player)
+        self.add_widget(self.my_label)
+
+        self.travel_direction = 'right'
+        self.bullet_on_screen = False
+        self.array_of_bullets = []
+        self.array_of_lives = []
+        self.number_of_lives = 3
+        self.array_of_aliens = []
+        self.num_cols = 5
+        self.going_right = True
+        self.amount_to_animate_by = 0
+        self.laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
+        self.bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
+    
+
+        Clock.unschedule(self.check_win)
+        Clock.unschedule(self.check_loss)
+        Clock.unschedule(self.aliens_shooting)
+        Clock.unschedule(self.check_player_alien_collision)
+        Clock.unschedule(self.number_of_columns_left)
+        Clock.unschedule(self.process_keys)
+
+        x_spacing_between_aliens = self.parent.size[1] / 10
+        y_start = self.parent.size[1] - self.parent.size[1] / 12
+        y_spacing_between_aliens = self.parent.size[1] / 15
+
+        for x in range(5):
+            for y in range(5):
+                new_alien = Alien()
+                new_alien.size = (Window.width / 10, Window.width / 10)
+                new_alien.pos = (x_spacing_between_aliens * x, y_start - y * y_spacing_between_aliens)
+                self.array_of_aliens.append(new_alien)
+
+        self.player.size = (self.parent.size[0] / 6, self.parent.size[0] / 8)       
+        
+        #SCHEDULING
+        Clock.schedule_interval(self.process_keys, 1/60)
+        Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
+        Clock.schedule_interval(self.check_win, 1 / 60)
+        Clock.schedule_interval(self.check_loss, 1 / 60)
+        Clock.schedule_interval(self.check_player_alien_collision, 1 / 60)
+        Clock.schedule_interval(self.number_of_columns_left, 1 / 360)
+
+        # ADDING ALIENS
+        for invader in self.array_of_aliens:
+            self.add_widget(invader)
+        # STARTING THE ALIENS MOVING
+        for invader in self.array_of_aliens:
+            invader.move_right_and_down()
+        
+        # 3 MINI HEARTS REPRESENTING LIVES REMAINING
+        for i in range(self.number_of_lives):
+            life = Life()
+            life.size = (Window.width / 20, Window.width / 20)
+            life.pos = (Window.width - (i + 1) * life.size[0] - (i + 1) * (Window.width / 30), Window.height - life.size[1])
+            self.array_of_lives.append(life)
+            self.add_widget(life)
+            
 class SpaceInvadersApp(App):
     def build(self):
         sm = ScreenManager()
