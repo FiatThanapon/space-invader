@@ -249,8 +249,6 @@ class Game(Widget):
     number_of_lives = 3
     array_of_aliens = []
     num_cols = 5
-    going_right = True
-    amount_to_animate_by = 0
     laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
     bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
 
@@ -416,8 +414,6 @@ class Game(Widget):
         self.number_of_lives = 3
         self.array_of_aliens = []
         self.num_cols = 5
-        self.going_right = True
-        self.amount_to_animate_by = 0
         self.laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
         self.bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
     
