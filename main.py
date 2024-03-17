@@ -131,7 +131,9 @@ class Explosion(Widget):
             self.parent.remove_widget(self)
 
 
-class Alien_bullet(Widget):
+class Missile(Widget):
+    sound_bump_damage = MultiAudio('sound/damage_2.m4a', 3)
+
     def move_down(self, *args):
         self.animation_down = Animation(x=self.pos[0], y=-self.size[1], duration=2)
         self.animation_down.bind(on_progress=self.on_route)
@@ -139,20 +141,50 @@ class Alien_bullet(Widget):
         self.animation_down.start(self)
 
     def on_route(self, *args):
-        if self.parent and self.parent.array_of_bullets:
-            for bullet in self.parent.array_of_bullets:
-                if self.collide_widget(bullet):
-                    self.parent.array_of_bullets.remove(bullet)
-                    self.parent.remove_widget(bullet)
-                    self.parent.remove_widget(self)
-                    return
-                
+        go_on = True
+        if go_on:
+            if self.parent:
+                if self.parent.array_of_bullets != []:
+                    for bullet in self.parent.array_of_bullets:
+                        if self.collide_widget(bullet):
+
+                            position_in_array = self.parent.array_of_bullets.index(bullet)
+                            del self.parent.array_of_bullets[position_in_array]
+                            self.parent.bullet_on_screen = False
+                            self.parent.remove_widget(bullet)
+                            self.animation_down.stop(self)
+                            go_on = False
+
+        if go_on:
+            if self.parent:
+                for bit in self.parent.array_of_bits:
+                    if self.collide_widget(bit):
+                        position_in_array = self.parent.array_of_bits.index(bit)
+                        del self.parent.array_of_bits[position_in_array]
+                        self.parent.remove_widget(bit)
+                        self.animation_down.stop(self)
+                        go_on = False
+
+        if go_on:
+            if self.parent:
+                if self.collide_widget(self.parent.ship):
+                    self.sound_bump_damage.play()
+                    new_explosion = Explosion()
+                    new_explosion.size = (self.parent.ship.size[0], self.parent.ship.size[1])
+                    new_explosion.pos = (
+                    self.parent.ship.pos[0], self.parent.ship.pos[1] + self.parent.ship.size[1] / 2)
+                    self.parent.add_widget(new_explosion)
+                    new_explosion.sequence_of_sprites()
+                    self.parent.number_of_lives -= 1
+
+                    if self.parent.array_of_lives != []:
+                        widget_to_remove = self.parent.array_of_lives[0]
+                        self.parent.remove_widget(widget_to_remove)
+                        del self.parent.array_of_lives[0]
+                    self.animation_down.stop(self)
+
     def remove_missile(self, *args):
-        print("Removing missile")
-        if self.parent and self in self.parent.array_of_alien_bullets:
-            self.parent.array_of_alien_bullets.remove(self)
         if self.parent:
-            self.parent.bullet_on_screen = False
             self.parent.remove_widget(self)
 
 
@@ -208,7 +240,7 @@ class Bullet(Widget):
 
     def move_up(self, *args):
         if self.parent:
-            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=0.75)
+            self.animation_up = Animation(x=self.pos[0], y=self.parent.height, duration=1.0)
             self.animation_up.bind(on_complete=self.remove_bullet)
             self.animation_up.bind(on_progress=self.on_travel)
             self.animation_up.start(self)
@@ -415,7 +447,15 @@ class Game(Widget):
                     self.alien_shoot_missile(saucer)
                     pass
 
+    def check_win(self, *args):
+        if self.array_of_aliens == []:
+            if self.parent.parent:
+                self.parent.parent.current = 'third'
 
+    def check_loss(self, *args):
+        if self.number_of_lives <= 0:
+            if self.parent.parent:
+                self.parent.parent.current = 'second'
 
 class SpaceInvadersApp(App):
     def build(self):
