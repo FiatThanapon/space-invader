@@ -265,7 +265,7 @@ class Game(Widget):
     array_of_bullets = []
     array_of_alien_bullets = [] #เพิ่มarrayของกระสุนเอเลี่ยน
     array_of_lives = []
-    number_of_lives = len(array_of_lives)
+    number_of_lives = 3
     array_of_aliens = []
     num_cols = 5
     going_right = True
@@ -280,13 +280,50 @@ class Game(Widget):
         self._keyboard.bind(on_key_down=self.on_key_down) #เชื่อมกับคีย์บอร์ด
         self._keyboard.bind(on_key_up=self.on_key_up) #เชื่อมกับคีย์บอร์ด
         self.pressed_keys = set()
-        print(self.number_of_lives)
-
+        
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
+    def _on_keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self.on_key_down)
+        self._keyboard.unbind(on_key_up=self.on_key_up)
+        self._keyboard = None
+
+    def on_key_down(self, keyboard, keycode, text, modifiers):
+        self.pressed_keys.add(keycode[1])
+
+    def on_key_up(self, keyboard, keycode):
+        if keycode[1] in self.pressed_keys:
+            self.pressed_keys.remove(keycode[1])
+
+    def process_keys(self, dt): #เลื่อนซ้ายขวา
+        cur_x = self.player.x
+        step = 200 * dt #ปรับความเร็ว
+
+        if self.pressed_keys.issuperset({'a'}):
+            cur_x = max(cur_x - step, 0) #ไม่เคลื่อนที่เกินขอบ
+
+        if self.pressed_keys.issuperset({'d'}):
+            cur_x = min(cur_x + step, self.width - self.player.width) #ไม่เคลื่อนที่เกินขอบ
+
+        if self.pressed_keys.issuperset({'spacebar'}):
+            if not self.bullet_on_screen:
+                self.laser.play() #เล่นเสียงlaser
+                new_bullet = Bullet()
+                self.add_widget(new_bullet)
+                new_bullet.size = (self.width / 60, self.width / 16)
+                new_bullet.pos = (self.player.center_x - (self.width / 160), self.player.top)
+                self.array_of_bullets.append(new_bullet)
+                new_bullet.move_up()
+                self.bullet_on_screen = True
+
+        self.player.x = cur_x
+
+        if not self.array_of_bullets:
+            self.bullet_on_screen = False
+
+
     def on_size(self, *args):
-        # DEFINING ALIENS
         x_spacing_between_aliens = self.parent.size[1] / 10
         y_start = self.parent.size[1] - self.parent.size[1] / 12
         y_spacing_between_aliens = self.parent.size[1] / 15
@@ -298,10 +335,9 @@ class Game(Widget):
                 new_alien.pos = (x_spacing_between_aliens * x, y_start - y * y_spacing_between_aliens)
                 self.array_of_aliens.append(new_alien)
 
-        # FOR PLAYER
         self.player.size = (self.parent.size[0] / 6, self.parent.size[0] / 8)
 
-        # IMPORTANT SCHEDULING
+        #SCHEDULING
         Clock.schedule_interval(self.process_keys, 1/60)
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
         Clock.schedule_interval(self.check_win, 1 / 60)
@@ -317,18 +353,24 @@ class Game(Widget):
             invader.move_right_and_down()
         
         # 3 MINI HEARTS REPRESENTING LIVES REMAINING
-        spacing = self.width / 2.5 #เปลี่ยนระยะห่าง 
-        pos_y = self.width + 570 #เปลี่ยนตำแหน่ง y
-        pos_x = self.width + 380 #เปลี่ยนตำแหน่ง x
-        for i in range(1, 4):
-            new_life = Life()
-            new_life.size = (self.width / 3, self.width / 3)
-            new_life.pos = (pos_x - (i * spacing), pos_y)
-            self.array_of_lives.append(new_life)
-            self.add_widget(new_life)
+        spacing = Window.width / 30
+        new_life_1 = Life()
+        new_life_1.size = (Window.width / 15, Window.width / 15)
+        new_life_1.pos = (Window.width - (3 * Window.width / 15) - (3 * spacing), Window.height - Window.width / 15)
+        self.array_of_lives.append(new_life_1)
+        self.add_widget(new_life_1)
 
-        self.number_of_lives = len(self.array_of_lives)
-        return self.number_of_lives #คืนจำนวนของชีวิต
+        new_life_2 = Life()
+        new_life_2.size = (Window.width / 15, Window.width / 15)
+        new_life_2.pos = (Window.width - (2 * Window.width / 15) - (2 * spacing), Window.height - Window.width / 15)
+        self.array_of_lives.append(new_life_2)
+        self.add_widget(new_life_2)
+
+        new_life_3 = Life()
+        new_life_3.size = (Window.width / 15, Window.width / 15)
+        new_life_3.pos = (Window.width - (1 * Window.width / 15) - (1 * spacing), Window.height - Window.width / 15)
+        self.array_of_lives.append(new_life_3)
+        self.add_widget(new_life_3)
     
     def check_win(self, *args):
         if self.array_of_aliens == []:
@@ -358,48 +400,6 @@ class Game(Widget):
             columns_left = len(x_coordinates_set)
             self.num_cols = columns_left
     
-    def _on_keyboard_closed(self):
-        self._keyboard.unbind(on_key_down=self.on_key_down)
-        self._keyboard.unbind(on_key_up=self.on_key_up)
-        self._keyboard = None
-
-    def _on_keyboard_closed(self):
-        self._keyboard.unbind(on_key_down=self.on_key_down)
-        self._keyboard.unbind(on_key_up=self.on_key_up)
-        self._keyboard = None
-
-    def on_key_down(self, keyboard, keycode, text, modifiers):
-        self.pressed_keys.add(keycode[1])
-
-    def on_key_up(self, keyboard, keycode):
-        if keycode[1] in self.pressed_keys:
-            self.pressed_keys.remove(keycode[1])
-
-    def process_keys(self, dt): #เลื่อนซ้ายขวา
-        cur_x = self.player.x
-        step = 300 * dt #ปรับความเร็ว
-
-        if self.pressed_keys.issuperset({'a'}):
-            cur_x = max(cur_x - step, 0) #ไม่เคลื่อนที่เกินขอบ
-
-        if self.pressed_keys.issuperset({'d'}):
-            cur_x = min(cur_x + step, self.width - self.player.width) #ไม่เคลื่อนที่เกินขอบ
-
-        if self.pressed_keys.issuperset({'spacebar'}):
-            if not self.bullet_on_screen:
-                self.laser.play() #เล่นเสียงlaser
-                new_bullet = Bullet()
-                self.add_widget(new_bullet)
-                new_bullet.size = (self.width / 60, self.width / 16)
-                new_bullet.pos = (self.player.center_x - (self.width / 160), self.player.top)
-                self.array_of_bullets.append(new_bullet)
-                new_bullet.move_up()
-                self.bullet_on_screen = True
-
-        self.player.x = cur_x
-
-        if not self.array_of_bullets:
-            self.bullet_on_screen = False
 
     def alien_shoot_missile(self, instance):
         new_missile = Missile()
