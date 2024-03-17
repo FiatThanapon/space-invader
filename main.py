@@ -334,25 +334,13 @@ class Game(Widget):
             invader.move_right_and_down()
         
         # 3 MINI HEARTS REPRESENTING LIVES REMAINING
-        spacing = Window.width / 30
-        new_life_1 = Life()
-        new_life_1.size = (Window.width / 15, Window.width / 15)
-        new_life_1.pos = (Window.width - (3 * Window.width / 15) - (3 * spacing), Window.height - Window.width / 15)
-        self.array_of_lives.append(new_life_1)
-        self.add_widget(new_life_1)
+        for i in range(self.number_of_lives):
+            life = Life()
+            life.size = (Window.width / 20, Window.width / 20)
+            life.pos = (Window.width - (i + 1) * life.size[0] - (i + 1) * (Window.width / 30), Window.height - life.size[1])
+            self.array_of_lives.append(life)
+            self.add_widget(life)
 
-        new_life_2 = Life()
-        new_life_2.size = (Window.width / 15, Window.width / 15)
-        new_life_2.pos = (Window.width - (2 * Window.width / 15) - (2 * spacing), Window.height - Window.width / 15)
-        self.array_of_lives.append(new_life_2)
-        self.add_widget(new_life_2)
-
-        new_life_3 = Life()
-        new_life_3.size = (Window.width / 15, Window.width / 15)
-        new_life_3.pos = (Window.width - (1 * Window.width / 15) - (1 * spacing), Window.height - Window.width / 15)
-        self.array_of_lives.append(new_life_3)
-        self.add_widget(new_life_3)
-    
     def check_win(self, *args):
         if self.array_of_aliens == []:
             if self.parent.parent:
