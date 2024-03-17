@@ -286,29 +286,35 @@ class Game(Widget):
         self.create_Life()
         print(self.number_of_lives)
         Clock.schedule_interval(self.process_keys, 1/60)
-        Clock.schedule_interval(self.check_hero_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่ายิงโดนไหม
         Clock.schedule_interval(self.aliens_shooting, 1) #วาดกระสุน
-        Clock.schedule_interval(self.check_alien_bullet_collisions, 1/60) #เรียกใช้คำสั่งตรวจสอบว่าโดนกระสุนเอเลี่ยนไหม
         Clock.schedule_interval(self.check_win, 1 / 60)
         Clock.schedule_interval(self.check_loss, 1 / 60)
+        Clock.schedule_interval(self.check_player_alien_collision, 1 / 60)
+        Clock.schedule_interval(self.number_of_columns_left, 1 / 360)
         self.bg.loop = True  # Loop bg sound
         self.bg.play() #play bg sound
 
 
     def create_aliens(self):
-        x_spacing_between_aliens = self.width / 1.1 # ปรับระยะห่าง x
-        y_start = self.height + 500 #เปลี่ยนตำแหน่ง x
-        x_start = self.width + 300 #เปลี่ยนตำแหน่ง y
-        y_spacing_between_aliens = self.height / 2 # ปรับระยะห่าง y
+        # ADDING ALIENS
+        for invader in self.array_of_aliens:
+            self.add_widget(invader)
+        # STARTING THE ALIENS MOVING
+        for invader in self.array_of_aliens:
+            invader.move_right_and_down()
 
-        for x in range(5): #แถวเอเลี่ยน
-            for y in range(5): #หลักเอเลี่ยน
-                new_alien = Alien()
-                new_alien.size = (self.width / 1.5, self.width / 2) # ปรับขนาดเอเลี่ยน
-                new_alien.pos = (x_start - x * x_spacing_between_aliens, y_start - y * y_spacing_between_aliens) #ตัวกำหนดตำแหน่ง
-                self.array_of_aliens.append(new_alien)
-                self.add_widget(new_alien)
-
+    def number_of_columns_left(self, *args):
+        if self.array_of_aliens != []:
+            x_coordinates_array = []
+            for invader in self.array_of_aliens:
+                x_coordinates_array.append(invader.pos[0])
+            x_coordinates_set = list(set(x_coordinates_array))
+            x_coordinates_set = sorted(x_coordinates_set)
+            self.leftmost_x = min(x_coordinates_set)
+            self.rightmost_x = max(x_coordinates_set)
+            columns_left = len(x_coordinates_set)
+            self.num_cols = columns_left
+    
     def create_Life(self):
         spacing = self.width / 2.5 #เปลี่ยนระยะห่าง 
         pos_y = self.width + 570 #เปลี่ยนตำแหน่ง y
@@ -322,39 +328,22 @@ class Game(Widget):
 
         self.number_of_lives = len(self.array_of_lives)
         return self.number_of_lives #คืนจำนวนของชีวิต
-
-    def check_hero_bullet_collisions(self, dt):
-        #ตรวจสอบการชนกันระหว่างกระสุนกับเอเลี่ยน
-        for bullet in self.array_of_bullets:
-            for alien in self.array_of_aliens:
-                if self.collides(bullet, alien):
-                    #ลบกระสุนและเอเลี่ยนเมื่อมันมาชนกัน
-                    self.remove_widget(bullet)
-                    self.array_of_bullets.remove(bullet)
-                    self.remove_widget(alien)
-                    self.array_of_aliens.remove(alien)
-                    return  
     
-    def check_alien_bullet_collisions(self, dt):
-    # Check if alien bullets collide with the player
-        for bullet in self.array_of_alien_bullets:
-            if self and self.collides(bullet, self.player):
-                self.number_of_lives -= 1
-                print(self.number_of_lives)
-                if self.array_of_lives:
-                    Life = self.array_of_lives[-1]
-                    self.remove_widget(Life)
-                    del self.array_of_lives[-1]
-                self.remove_widget(bullet) #ทำให้ภาพกระสุนหายไปเมื่อชน
-                self.array_of_alien_bullets.remove(bullet) #ทำให้ออปเจ็คของกระสุนหายไปเมื่อชน จะไม่ทำให้เกิดการชนซ้ำ
-                
-    def collides(self, rect1, rect2):
-        #ตรวจสอบว่า rect1 และ rect2 ทับซ้อนกันหรือไม่
-        r1x, r1y = rect1.pos
-        r2x, r2y = rect2.pos
-        r1w, r1h = rect1.size
-        r2w, r2h = rect2.size
-        return r1x < r2x + r2w and r1x + r1w > r2x and r1y < r2y + r2h and r1y + r1h > r2y
+    def check_win(self, *args):
+        if self.array_of_aliens == []:
+            if self.parent.parent:
+                self.parent.parent.current = 'third'
+
+    def check_loss(self, *args):
+        if self.number_of_lives <= 0:
+            if self.parent.parent:
+                self.parent.parent.current = 'second'
+
+    def check_player_alien_collision(self, *args):
+        for invader in self.array_of_aliens:
+            if invader.pos[1] <= (self.player.pos[1] + self.player.size[1]):
+                if self.parent.parent:
+                    self.parent.parent.current = 'second'
     
     def _on_keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self.on_key_down)
@@ -435,19 +424,13 @@ class Game(Widget):
                     pass
 
 
-    def check_win(self, *args):
-        if self.array_of_aliens == []:
-            if self.parent.parent:
-                self.parent.parent.current = 'third'
-
-    def check_loss(self, *args):
-        if self.number_of_lives <= 0:
-            if self.parent.parent:
-                self.parent.parent.current = 'second'
-
 class SpaceInvadersApp(App):
     def build(self):
-        return Game()
+        sm = ScreenManager()
+        sm.add_widget(GameScreen(name='game'))
+        sm.add_widget(SecondScreen(name='second'))
+        sm.add_widget(ThirdScreen(name='third'))
+        return sm
 
 
         
