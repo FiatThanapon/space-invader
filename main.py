@@ -13,19 +13,6 @@ Builder.load_file('design.kv')
 
 Window.size = (500, 700)
 
-class MultiAudio:
-    _next = 0
-
-    def __init__(self, filename, count):
-        self.buf = [SoundLoader.load(filename)
-                    for _ in range(count)]
-
-    def play(self, *args):
-        self._next = (self._next + 1) % len(self.buf)
-
-    def stop(self,*args):
-        self.buf[self._next].stop()
-
 class GameScreen(Screen):
     pass
 
@@ -44,7 +31,7 @@ class ThirdScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.consec_wins = 0
-        self.streak_label = Label(text=f"WINNING STREAK: {self.consec_wins}",font_size=(Window.width/20),color=(255 / 255, 232 / 255, 31 / 255, 1),\
+        self.streak_label = Label(text=f"WINNING: {self.consec_wins}",font_size=(Window.width/20),color=(255 / 255, 232 / 255, 31 / 255, 1),\
                              pos_hint={'center_x': 0.3, 'center_y': 0.95},font_name="font/starwars_font")
 
         self.add_widget(self.streak_label)
@@ -61,7 +48,7 @@ class ThirdScreen(Screen):
     def on_pre_enter(self):
         self.consec_wins += 1
 
-        self.streak_label.text = f"WINNING STREAK: {self.consec_wins}"
+        self.streak_label.text = f"WINNING: {self.consec_wins}"
 
 class Life(Widget):
     pass
@@ -131,8 +118,6 @@ class Explosion(Widget):
 
 
 class Missile(Widget):
-    sound_bump_damage = MultiAudio('sound/damage_2.m4a', 3)
-
     def move_down(self, *args):
         self.animation_down = Animation(x=self.pos[0], y=-self.size[1], duration=2)
         self.animation_down.bind(on_progress=self.on_route)
@@ -157,7 +142,6 @@ class Missile(Widget):
         if go_on:
             if self.parent:
                 if self.collide_widget(self.parent.player):
-                    self.sound_bump_damage.play()
                     new_explosion = Explosion()
                     new_explosion.size = (self.parent.player.size[0], self.parent.player.size[1])
                     new_explosion.pos = (
@@ -224,7 +208,6 @@ class Alien(Widget):
 
 
 class Bullet(Widget):
-    sound_bump_invader_death = MultiAudio('sound/invader_death_3_2.m4a', 10)
     continue_on = True
 
     def move_up(self, *args):
@@ -247,7 +230,6 @@ class Bullet(Widget):
                 for invader in self.parent.array_of_aliens:
                     if self.collide_widget(invader):
                         position_in_array = self.parent.array_of_aliens.index(invader)
-                        self.sound_bump_invader_death.play()
                         new_explosion = Explosion()
                         new_explosion.size = (invader.size[0], invader.size[1])
                         new_explosion.pos = (invader.pos[0], invader.pos[1])
@@ -272,7 +254,6 @@ class Game(Widget):
     amount_to_animate_by = 0
     laser = SoundLoader.load('sound/laser.mp3') #เปลี่ยนเสียงเลเซอร์
     bg = SoundLoader.load('sound/music.mp3') #เปลี่ยนเสียงbackground
-    sound_bump_missile = MultiAudio('sound/tie_laser_3_2.m4a', 10)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -403,7 +384,6 @@ class Game(Widget):
 
     def alien_shoot_missile(self, instance):
         new_missile = Missile()
-        self.sound_bump_missile.play()
 
         self.add_widget(new_missile)
         new_missile.size = (self.parent.size[0] / 60, self.parent.size[0] / 10)
